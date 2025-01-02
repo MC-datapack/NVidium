@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import me.cortex.nvidium.Nvidium;
 import me.cortex.nvidium.NvidiumWorldRenderer;
 import me.cortex.nvidium.sodiumCompat.INvidiumWorldRendererGetter;
-import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
-import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
+import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
+import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
+import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
@@ -27,21 +27,25 @@ public abstract class MixinSodiumWorldRenderer implements INvidiumWorldRendererG
     @Shadow private RenderSectionManager renderSectionManager;
 
     @Shadow
-    protected static void renderBlockEntity(MatrixStack matrices, BufferBuilderStorage bufferBuilders, Long2ObjectMap<SortedSet<BlockBreakingInfo>> blockBreakingProgressions, float tickDelta, VertexConsumerProvider.Immediate immediate, double x, double y, double z, BlockEntityRenderDispatcher dispatcher, BlockEntity entity) {
+    private static void renderBlockEntity(MatrixStack matrices, BufferBuilderStorage bufferBuilders, Long2ObjectMap<SortedSet<BlockBreakingInfo>> blockBreakingProgressions, float tickDelta, VertexConsumerProvider.Immediate immediate, double x, double y, double z, BlockEntityRenderDispatcher dispatcher, BlockEntity entity) {
     }
 
-    @Inject(method = "setupTerrain", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/RenderSectionManager;needsUpdate()Z", shift = At.Shift.BEFORE))
-    private void injectTerrainSetup(Camera camera, Viewport viewport, int frame, boolean spectator, boolean updateChunksImmediately, CallbackInfo ci) {
+    @Inject(method = "setupTerrain", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/RenderSectionManager;updateChunks(Z)V", shift = At.Shift.BEFORE))
+    private void injectTerrainSetup(Camera camera, Viewport viewport, boolean spectator, boolean updateChunksImmediately, CallbackInfo ci) {
+        System.out.println("Injecting terrain setup...");
         if (Nvidium.IS_ENABLED && Nvidium.config.async_bfs) {
-            ((INvidiumWorldRendererGetter)renderSectionManager).getRenderer().update(camera, viewport, frame, spectator);
+            System.out.println("Nvidium is enabled and async_bfs is true.");
+            ((INvidiumWorldRendererGetter)renderSectionManager).nVidium$getRenderer().update(camera, viewport, 1, spectator);
         }
     }
 
     @Inject(method = "renderBlockEntities(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/BufferBuilderStorage;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDDLnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;)V", at = @At("HEAD"), cancellable = true, remap = true)
     private void overrideEntityRenderer(MatrixStack matrices, BufferBuilderStorage bufferBuilders, Long2ObjectMap<SortedSet<BlockBreakingInfo>> blockBreakingProgressions, float tickDelta, VertexConsumerProvider.Immediate immediate, double x, double y, double z, BlockEntityRenderDispatcher blockEntityRenderer, CallbackInfo ci) {
+        System.out.println("Overriding entity renderer...");
         if (Nvidium.IS_ENABLED && Nvidium.config.async_bfs) {
+            System.out.println("Cancelling default block entity rendering and using Nvidium.");
             ci.cancel();
-            var sectionsWithEntities = ((INvidiumWorldRendererGetter)renderSectionManager).getRenderer().getSectionsWithEntities();
+            var sectionsWithEntities = ((INvidiumWorldRendererGetter)renderSectionManager).nVidium$getRenderer().getSectionsWithEntities();
             for (var section : sectionsWithEntities) {
                 if (section.isDisposed() || section.getCulledBlockEntities() == null)
                     continue;
@@ -53,10 +57,12 @@ public abstract class MixinSodiumWorldRenderer implements INvidiumWorldRendererG
     }
 
     @Override
-    public NvidiumWorldRenderer getRenderer() {
+    public NvidiumWorldRenderer nVidium$getRenderer() {
         if (Nvidium.IS_ENABLED) {
-            return ((INvidiumWorldRendererGetter)renderSectionManager).getRenderer();
+            System.out.println("Returning Nvidium world renderer.");
+            return ((INvidiumWorldRendererGetter)renderSectionManager).nVidium$getRenderer();
         } else {
+            System.out.println("Nvidium is not enabled.");
             return null;
         }
     }

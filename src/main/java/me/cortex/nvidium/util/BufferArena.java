@@ -6,10 +6,8 @@ import me.cortex.nvidium.gl.buffers.IDeviceMappedBuffer;
 import me.cortex.nvidium.gl.buffers.PersistentSparseAddressableBuffer;
 
 //TODO: make it not remove and immediately deallocate the sparse pages, wait until the end of a frame to deallocate
-// since committing pages is not cheap
 public class BufferArena {
     SegmentedManager segments = new SegmentedManager();
-    private final RenderDevice device;
     public final IDeviceMappedBuffer buffer;
     private long totalQuads;
     private final int vertexFormatSize;
@@ -18,7 +16,6 @@ public class BufferArena {
 
 
     public BufferArena(RenderDevice device, long memory, int vertexFormatSize) {
-        this.device = device;
         this.vertexFormatSize = vertexFormatSize;
         this.memory_size = memory;
         if (Nvidium.SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER) {

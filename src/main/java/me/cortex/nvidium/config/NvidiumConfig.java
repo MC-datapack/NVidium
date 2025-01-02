@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class NvidiumConfig {
     //The options
@@ -49,9 +50,10 @@ public class NvidiumConfig {
     }
 
     public void save() {
-        //Unsafe, todo: fixme! needs to be atomic!
         try {
-            Files.writeString(getConfigPath(), GSON.toJson(this));
+            Path tempFile = Files.createTempFile(getConfigPath().getParent(), "config", ".tmp");
+            Files.writeString(tempFile, GSON.toJson(this));
+            Files.move(tempFile, getConfigPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             Nvidium.LOGGER.error("Failed to write config file", e);
         }

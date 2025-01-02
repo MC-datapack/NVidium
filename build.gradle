@@ -30,9 +30,8 @@ loom {
     }
 }
 
-
 processResources {
-    inputs.properties("version": project.version, "commit": gitCommitHash, "buildtime":buildtime)
+    inputs.properties("version": project.version, "commit": gitCommitHash, "buildtime": buildtime)
 
     archivesBaseName = "nvidium"
     filesMatching("fabric.mod.json") {
@@ -60,19 +59,29 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API
-    modImplementation(fabricApi.module("fabric-api-base", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-block-view-api-v2", project.fabric_version))
-    modImplementation(fabricApi.module("fabric-rendering-fluids-v1", project.fabric_version))
+    // Fabric API - Include everything
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation("net.fabricmc.fabric-api:fabric-rendering-data-attachment-v1:0.3.40+73761d2e3b")
-    modImplementation(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
+    // Sodium
+    modImplementation "maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric"
 
-    modImplementation "maven.modrinth:sodium:mc1.21-0.5.11"
+    // Other dependencies (commented out for now)
+    // modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
+    // modImplementation "maven.modrinth:chunks-fade-in:v1.0.3-1.19.4"
+    // modImplementation "maven.modrinth:immersiveportals:v2.7.3-mc1.19.4"
+    modCompileOnly "maven.modrinth:iris:1.8.0-beta.1+1.21-fabric"
+}
 
-    //modImplementation "maven.modrinth:c2me-fabric:0.2.0+alpha.10.49+1.19.4"
-    //modImplementation "maven.modrinth:chunks-fade-in:v1.0.3-1.19.4"
-    //modImplementation "maven.modrinth:immersiveportals:v2.7.3-mc1.19.4"
-    modCompileOnly "maven.modrinth:iris:1.7.0+1.20.6"
+tasks.withType(JavaExec).configureEach {
+    doFirst {
+        println "Executing task: ${name}"
+    }
+    doLast {
+        println "Task completed: ${name}"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 

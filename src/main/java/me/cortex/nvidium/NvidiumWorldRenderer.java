@@ -6,17 +6,17 @@ import me.cortex.nvidium.managers.SectionManager;
 import me.cortex.nvidium.sodiumCompat.NvidiumCompactChunkVertex;
 import me.cortex.nvidium.util.DownloadTaskStream;
 import me.cortex.nvidium.util.UploadingBufferStream;
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
-import me.jellysquid.mods.sodium.client.render.chunk.ChunkRenderMatrices;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
-import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.impl.CompactChunkVertex;
-import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
+import net.caffeinemc.mods.sodium.client.SodiumClientMod;
+import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
+import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
+import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
+import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.Sprite;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 import org.joml.Matrix4x3fc;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,22 +76,35 @@ public class NvidiumWorldRenderer {
     public void reloadShaders() {
         renderPipeline.reloadShaders();
     }
-
     public void renderFrame(Viewport viewport, ChunkRenderMatrices matrices, double x, double y, double z) {
+        System.out.println("Rendering frame...");
         renderPipeline.renderFrame(viewport, matrices, x, y, z);
+
+        int error = GL11.glGetError();
+        if (error != GL11.GL_NO_ERROR) {
+            System.err.println("OpenGL error: " + error);
+        }
 
         while (sectionManager.terrainAreana.getUsedMB() > (max_geometry_memory - 100)) {
             renderPipeline.removeARegion();
+            System.out.println("Removed a region due to memory constraints.");
         }
 
         if (Nvidium.SUPPORTS_PERSISTENT_SPARSE_ADDRESSABLE_BUFFER && (System.currentTimeMillis() - last_sample_time) > 60000) {
             last_sample_time = System.currentTimeMillis();
             update_allowed_memory();
+            System.out.println("Updated allowed memory to: " + max_geometry_memory + " MB");
         }
     }
 
     public void renderTranslucent() {
+        System.out.println("Rendering translucent geometry...");
         this.renderPipeline.renderTranslucent();
+
+        int error = GL11.glGetError();
+        if (error != GL11.GL_NO_ERROR) {
+            System.err.println("OpenGL error: " + error);
+        }
     }
 
     public void deleteSection(RenderSection section) {
@@ -99,8 +112,14 @@ public class NvidiumWorldRenderer {
     }
 
     public void uploadBuildResult(ChunkBuildOutput buildOutput) {
+        buildOutput.meshes.forEach((key, value) -> {
+            System.out.println("Mesh key: " + key);
+            System.out.println("Vertex data length: " + value.getVertexData().getLength());
+            System.out.println("Vertex counts: " + Arrays.toString(value.getVertexCounts()));
+        });
         this.sectionManager.uploadChunkBuildResult(buildOutput);
     }
+
 
     public void addDebugInfo(ArrayList<String> debugInfo) {
         debugInfo.add("Using nvidium renderer: "+ Nvidium.MOD_VERSION);

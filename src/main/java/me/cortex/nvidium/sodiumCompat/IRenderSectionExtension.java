@@ -1,9 +1,9 @@
 package me.cortex.nvidium.sodiumCompat;
 
 public interface IRenderSectionExtension {
-    boolean isSubmittedRebuild();
-    void isSubmittedRebuild(boolean state);
+    boolean nVidium$isSubmittedRebuild();
+    void nVidium$isSubmittedRebuild(boolean state);
 
-    boolean isSeen();
-    void isSeen(boolean state);
+    boolean nVidium$isSeen();
+    void nVidium$isSeen(boolean state);
 }

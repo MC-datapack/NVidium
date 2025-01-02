@@ -11,10 +11,9 @@ import me.cortex.nvidium.sodiumCompat.IRepackagedResult;
 import me.cortex.nvidium.util.BufferArena;
 import me.cortex.nvidium.util.SegmentedManager;
 import me.cortex.nvidium.util.UploadingBufferStream;
-import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
-import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
-import net.minecraft.client.MinecraftClient;
+import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
+import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
+import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.joml.Vector3i;
 import org.joml.Vector4i;
@@ -50,7 +49,7 @@ public class SectionManager {
     }
 
     public void uploadChunkBuildResult(ChunkBuildOutput result) {
-        var output = ((IRepackagedResult)result).getOutput();
+        var output = ((IRepackagedResult)result).nVidium$getOutput();
 
         RenderSection section = result.render;
         long sectionKey = ChunkSectionPos.asLong(section.getChunkX(), section.getChunkY(), section.getChunkZ());
@@ -78,7 +77,7 @@ public class SectionManager {
                 Nvidium.LOGGER.error("Terrain arena critically out of memory, expect issues with chunks!! " +
                         " quad_used: " + this.terrainAreana.getUsedMB() +
                         " physically used: " + this.terrainAreana.getMemoryUsed() +
-                        " limit: " + ((INvidiumWorldRendererGetter)(SodiumWorldRenderer.instance())).getRenderer().getMaxGeometryMemory());
+                        " limit: " + ((INvidiumWorldRendererGetter)(SodiumWorldRenderer.instance())).nVidium$getRenderer().getMaxGeometryMemory());
 
                 deleteSection(sectionKey);
                 return;

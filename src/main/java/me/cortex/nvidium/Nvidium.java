@@ -20,7 +20,7 @@ public class Nvidium {
     public static NvidiumConfig config = NvidiumConfig.loadOrCreate();
 
     static {
-        ModContainer mod = (ModContainer) FabricLoader.getInstance().getModContainer("nvidium").orElseThrow(NullPointerException::new);
+        ModContainer mod = FabricLoader.getInstance().getModContainer("nvidium").orElseThrow(NullPointerException::new);
         var version = mod.getMetadata().getVersion().getFriendlyString();
         var commit = mod.getMetadata().getCustomValue("commit").getAsString();
         MOD_VERSION = version+"-"+commit;
@@ -28,13 +28,12 @@ public class Nvidium {
 
     public static void checkSystemIsCapable() {
         var cap = GL.getCapabilities();
-        boolean supported = cap.GL_NV_mesh_shader &&
+        IS_COMPATIBLE = cap.GL_NV_mesh_shader &&
                 cap.GL_NV_uniform_buffer_unified_memory &&
                 cap.GL_NV_vertex_buffer_unified_memory &&
                 cap.GL_NV_representative_fragment_test &&
                 cap.GL_ARB_sparse_buffer &&
                 cap.GL_NV_bindless_multi_draw_indirect;
-        IS_COMPATIBLE = supported;
         if (IS_COMPATIBLE) {
             LOGGER.info("All capabilities met");
         } else {

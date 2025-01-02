@@ -23,14 +23,12 @@ public class TickableManager {
     }
 
     public static void TickAll() {//Should be called at the very end of the frame
-        var iter = UPLOADERS.iterator();
-        while (iter.hasNext()) {
-            iter.next().tick();
+        for (UploadingBufferStream uploader : UPLOADERS) {
+            uploader.tick();
         }
 
-        var iter2 = DOWNLOADERS.iterator();
-        while (iter2.hasNext()) {
-            iter2.next().tick();
+        for (DownloadTaskStream downloader : DOWNLOADERS) {
+            downloader.tick();
         }
     }
 }
